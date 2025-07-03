@@ -9,23 +9,23 @@ phases:
       - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
       - unzip awscliv2.zip
       - ./aws/install
-      - export PATH=$PWD/aws/dist:$PATH
+      - export PATH=$PWD/.local/bin:$PATH
       - aws --version
 
   pre_build:
     commands:
-      - echo Getting CodeArtifact token...
-      - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain nextwork --domain-owner 165581927178 --region eu-west-2 --query authorizationToken --output text)
-      - echo Token acquired
+      - echo Logging into CodeArtifact repository...
+      - aws codeartifact login --tool maven --repository nextwork-devops-cicd --domain nextwork --domain-owner 165581927178 --region eu-west-2
+      - echo Logged in successfully
 
   build:
     commands:
-      - echo Building Maven project with CodeArtifact auth token...
-      - mvn -s settings.xml -Daws.codeartifact.authToken=$CODEARTIFACT_AUTH_TOKEN package
+      - echo Building Maven project...
+      - mvn package
 
   post_build:
     commands:
-      - echo Build complete on `date`
+      - echo Build completed on `date`
 
 artifacts:
   files:
