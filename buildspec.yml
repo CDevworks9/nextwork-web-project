@@ -13,13 +13,15 @@ phases:
 
   pre_build:
     commands:
-      - echo Logging in to AWS CodeArtifact...
-      - aws codeartifact login --tool maven --repository nextwork-devops-cicd --domain nextwork --domain-owner 165581927178 --region eu-west-2
+      - echo Getting CodeArtifact authorization token...
+      - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain nextwork --domain-owner 165581927178 --region eu-west-2 --query authorizationToken --output text)
+      - echo CodeArtifact token received
 
   build:
     commands:
-      - echo Build started on `date`
-      - mvn -s settings.xml package
+      - echo Starting Maven build with CodeArtifact token...
+      # Pass the token to Maven using -Daws.codeartifact.authToken
+      - mvn -s settings.xml -Daws.codeartifact.authToken=$CODEARTIFACT_AUTH_TOKEN package
 
   post_build:
     commands:
